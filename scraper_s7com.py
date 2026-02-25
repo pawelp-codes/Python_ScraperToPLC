@@ -1,6 +1,6 @@
 # scraper_selenium.py
 # -------------------
-# Odczyt numeru detalu z lokalnego serwera HTTP (np. http://<IP>:8000)
+# Odczyt danych z lokalnego serwera HTTP (np. http://<IP>:<PORT>)
 # Watchdog Selenium restartuje przeglądarkę przy błędzie
 # Autoreconnect PLC S7-1500
 # INT zawsze 3-cyfrowy, brak/blad = 000
