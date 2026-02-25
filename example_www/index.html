@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Atlas Copco Simulator</title>
+    <style>
+        body { font-family: Arial; margin: 40px; }
+        h1 { font-size: 24px; }
+        .value { font-weight: bold; color: darkblue; }
+    </style>
+</head>
+<body>
+
+<div style="border:1px solid black; padding: 0px 20px; background-color: lightgray; ">
+        <h1>
+            WORKPIECE NUMBER :
+            <span class="value workpieceNumber">---</span>
+        </h1>
+    </div>
+
+    <script>
+        function getRandomValue() {
+            // 20% szans na brak wartości
+            if (Math.random() < 0.05) {
+                return "---";
+            }
+            return Math.floor(Math.random() * 300) + 1;
+        }
+
+        function updateValue() {
+            const element = document.querySelector(".value.workpieceNumber");
+            element.textContent = getRandomValue();
+        }
+
+        updateValue();
+        setInterval(updateValue, 2000);
+    </script>
+
+</body>
+</html>

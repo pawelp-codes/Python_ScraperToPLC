@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+*.sqlite3
+
+# Virtual environments
+venv/
+env/
+.env/
+
+# IDE / Editor
+.vscode/
+*.code-workspace
+
+# System
+.DS_Store
+Thumbs.db
+
+# Chrome / Selenium binaries
+chromedriver.exe
+chrome-win64/
+LICENSE.chromedriver
+THIRD_PARTY_NOTICES.chromedriver
+
+# HTML / temp outputs
+last_page.html
