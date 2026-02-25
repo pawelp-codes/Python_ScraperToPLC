@@ -1,6 +1,6 @@
 # Python Scraper to PLC
 
-Projekt umożliwia odczyt numeru detalu z lokalnego serwera HTTP (np. interfejsu webowego maszyny) i zapis wartości do PLC S7-1500. System automatycznie restartuje przeglądarkę w przypadku błędów (watchdog Selenium) i ponawia połączenie z PLC w razie utraty komunikacji.
+Projekt umożliwia odczyt wybranych dancyh z lokalnego serwera HTTP (np. interfejsu webowego maszyny) i zapis wartości do PLC S7-1500. System automatycznie restartuje przeglądarkę w przypadku błędów (watchdog Selenium) i ponawia połączenie z PLC w razie utraty komunikacji.
 
 Funkcjonalności:
 - Odczyt wartości z elementu strony za pomocą Selenium (`CSS_SELECTOR`)
@@ -8,25 +8,6 @@ Funkcjonalności:
 - Watchdog Selenium – automatyczny restart przeglądarki przy błędzie
 - Autoreconnect PLC – próby ponownego połączenia w razie rozłączenia
 - Zapis ostatniej strony HTML do `last_page.html` (debug/log)
-
-Konfiguracja znajduje się w pliku `scraper_selenium.py` i należy ją dostosować do swojego środowiska:
-
-```python
-URL = "https://127.0.0.1:8181/doc/index.html#/process/workplace1"
-CSS_SELECTOR = ".value.currentProcessWorkpiece"
-
-READ_INTERVAL_SEC = 1
-PLC_RECONNECT_SEC = 5
-SELENIUM_RESTART_SEC = 5
-
-PLC_IP = "192.168.0.1"
-PLC_RACK = 0
-PLC_SLOT = 1
-PLC_DB_NUMBER = 69
-PLC_DB_OFFSET = 0
-
-CHROMEDRIVER_PATH = "./chromedriver.exe"
-CHROME_BINARY_PATH = "./chrome-win64/chrome.exe"
 
 Wymagania:
 
@@ -55,12 +36,22 @@ Skrypt uruchomi Selenium w trybie headless i rozpocznie odczyt z serwera oraz za
 scraper_selenium.py - do testowania dzialania samego scrappera (pobiera zmienna danej klasy i wyswietla w konsoli)
 
 
-Struktura katalogów:
+Konfiguracja znajduje się w pliku `scraper_selenium.py` i należy ją dostosować do swojego środowiska:
 
-.
-├── scraper_selenium.py
-├── scraper_s7com.py
-├── autostartPyScraperToPLC.bat
-├── chromedriver.exe
-├── chrome-win64/
-└── example_www/
+```python
+URL = "https://127.0.0.1:8181/doc/index.html#/process/workplace1"
+CSS_SELECTOR = ".value.currentProcessWorkpiece"
+
+READ_INTERVAL_SEC = 1
+PLC_RECONNECT_SEC = 5
+SELENIUM_RESTART_SEC = 5
+
+PLC_IP = "192.168.0.1"
+PLC_RACK = 0
+PLC_SLOT = 1
+PLC_DB_NUMBER = 69
+PLC_DB_OFFSET = 0
+
+CHROMEDRIVER_PATH = "./chromedriver.exe"
+CHROME_BINARY_PATH = "./chrome-win64/chrome.exe"
+
