@@ -10,7 +10,8 @@
 # =========================
 
 URL = "https://127.0.0.1:8181/doc/index.html#/process/workplace1"
-CSS_SELECTOR = ".value.currentProcessWorkpiece"
+CSS_SELECTOR1 = ".value.currentProcessWorkpiece"
+XPATH_SELECTOR2 = "//*[@id='app']/div/div/main/div/div[2]/div[2]/div[1]/div/table[1]/tbody/tr/td[2]"
 
 READ_INTERVAL_SEC = 1
 PLC_RECONNECT_SEC = 5
@@ -20,7 +21,8 @@ PLC_IP = "192.168.0.1"
 PLC_RACK = 0
 PLC_SLOT = 1
 PLC_DB_NUMBER = 69
-PLC_DB_OFFSET = 0
+PLC_DB_OFFSET1 = 0
+PLC_DB_OFFSET2 = 2
 
 CHROMEDRIVER_PATH = "./chromedriver.exe"
 CHROME_BINARY_PATH = "./chrome-win64/chrome.exe"
@@ -60,7 +62,10 @@ def start_driver():
 
     wait = WebDriverWait(driver, 5)
     wait.until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, CSS_SELECTOR))
+        EC.presence_of_element_located((By.CSS_SELECTOR, CSS_SELECTOR1))
+    )
+    wait.until(
+        EC.presence_of_element_located((By.XPATH, XPATH_SELECTOR2))
     )
 
     return driver
@@ -74,10 +79,29 @@ def connect_plc():
     plc.connect(PLC_IP, PLC_RACK, PLC_SLOT)
     return plc
 
-def write_int(plc, value):
+def write_int(plc, value, PLC_DB_OFFSET):
     data = bytearray(2)
     set_int(data, 0, value)
     plc.db_write(PLC_DB_NUMBER, PLC_DB_OFFSET, data)
+
+def parse_value1(raw):
+    try:
+        v = int(raw)
+        if v < 0 or v > 999:
+            return 0
+        return v
+    except:
+        return 0
+
+def parse_value2(raw):
+    try:
+        v = str(raw)
+        if v != "disabled":
+            return 1
+        else:
+             return 0
+    except:
+        return 0
 
 # =========================
 # ===== MAIN ==============
@@ -87,7 +111,8 @@ def main():
 
     plc = None
     driver = None
-    last_value = None
+    last_value1 = None
+    last_value2 = None
 
     print("Start systemu")
 
@@ -116,8 +141,11 @@ def main():
                 continue
 
         try:
-            element = driver.find_element(By.CSS_SELECTOR, CSS_SELECTOR)
-            raw = element.text.strip()
+            element1 = driver.find_element(By.CSS_SELECTOR, CSS_SELECTOR1)
+            raw1 = element1.text.strip()
+            
+            element2 = driver.find_element(By.XPATH, XPATH_SELECTOR2)
+            raw2 = element2.text.strip()
 
             # ==========================
             # ===== Zapis HTML ========
@@ -129,20 +157,22 @@ def main():
                 print("Nie udało się zapisać HTML:", e)
             # ==========================
         
-            try:
-                value = int(raw)
-                if value < 0 or value > 999:
-                    value = 0
-            except:
-                value = 0
+            value1 = parse_value1(raw1)
+            value2 = parse_value2(raw2)
 
             # Zawsze 3 cyfry
-            value_str = f"{value:03d}"
+            value1_str = f"{value1:03d}"
+            value2_str = f"{value2:03d}"
 
-            if value != last_value:
-                print("Wysyłam:", value_str)
-                write_int(plc, value)
-                last_value = value
+            if value1 != last_value1:
+                print("Wysyłam /workpiece/:", value1_str)
+                write_int(plc, value1, PLC_DB_OFFSET1)
+                last_value1 = value1
+
+            if value2 != last_value2:
+                print("Wysyłam /tightening group state/:", value2_str)
+                write_int(plc, value2, PLC_DB_OFFSET2)
+                last_value2 = value2
 
             time.sleep(READ_INTERVAL_SEC)
 
