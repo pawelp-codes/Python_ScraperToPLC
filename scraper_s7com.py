@@ -8,6 +8,7 @@ import urllib.request
 
 import snap7
 from snap7.util import set_int, get_int
+from snap7.util import set_bool, get_bool
 from snap7.client import Client
 
 from selenium import webdriver
@@ -37,7 +38,8 @@ PLC_SLOT = 1
 PLC_DB_NUMBER = 69
 PLC_DB_OFFSET1 = 0
 PLC_DB_OFFSET2 = 2
-PLC_DB_OFFSET_RESTART = 4
+PLC_DB_RESTART_BYTE = 4
+PLC_DB_RESTART_BIT = 0
 
 CHROMEDRIVER_PATH = "./chromedriver.exe"
 CHROME_BINARY_PATH = "./chrome-win64/chrome.exe"
@@ -71,6 +73,26 @@ def read_int(plc, offset):
         return get_int(data, 0)
     except:
         return 0
+    
+def write_bool(plc, value, byte_offset, bit_offset, retries=3):
+    for _ in range(retries):
+        try:
+            data = plc.db_read(PLC_DB_NUMBER, byte_offset, 1)
+            buffer = bytearray(data)
+
+            set_bool(buffer, 0, bit_offset, value)
+            plc.db_write(PLC_DB_NUMBER, byte_offset, buffer)
+            return True
+        except:
+            time.sleep(1)
+    return False
+
+def read_bool(plc, byte_offset, bit_offset):
+    try:
+        data = plc.db_read(PLC_DB_NUMBER, byte_offset, 1)
+        return get_bool(data, 0, bit_offset)
+    except:
+        return False
 
 def reset_plc_values(plc):
     log("Błąd -> zeruję PLC")
@@ -193,7 +215,7 @@ def main():
 
     last_value1 = None
     last_value2 = None
-    last_restart = 0
+    last_restart_flag = False
 
     log("Start systemu")
 
@@ -209,11 +231,18 @@ def main():
                 continue
 
         # RESTART Z PLC
-        restart_flag = read_int(plc, PLC_DB_OFFSET_RESTART)
-        if restart_flag == 1:
-            log("PLC -> restart skryptu")
-            write_int(plc, 0, PLC_DB_OFFSET_RESTART)
+        restart_flag = read_bool(plc, PLC_DB_RESTART_BYTE, PLC_DB_RESTART_BIT)
+
+        # wykrycie zbocza narastającego (0 -> 1)
+        if restart_flag and not last_restart_flag:
+            log("PLC -> restart skryptu (BOOL)")
+
+            # zeruj flagę w PLC
+            write_bool(plc, False, PLC_DB_RESTART_BYTE, PLC_DB_RESTART_BIT)
+
             restart_script()
+
+        last_restart_flag = restart_flag
 
         # Selenium start
         if driver is None:
